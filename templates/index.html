@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Método Gráfico</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #0b0f1a;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --border: #1f2d44;
+            --accent: #00d4ff;
+            --accent2: #7c3aed;
+            --accent3: #10b981;
+            --text: #e2e8f0;
+            --text-muted: #64748b;
+            --text-dim: #94a3b8;
+            --danger: #f87171;
+            --font-display: 'Syne', sans-serif;
+            --font-mono: 'DM Mono', monospace;
+            --radius: 12px;
+            --glow: 0 0 30px rgba(0, 212, 255, 0.08);
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 40px 20px 80px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glow blob */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            width: min(860px, 100%);
+            margin: auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+            animation: fadeDown 0.6s ease both;
+        }
+
+        .header-tag {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin-bottom: 18px;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: clamp(28px, 5vw, 46px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-sub {
+            margin-top: 10px;
+            color: var(--text-muted);
+            font-size: 13px;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            margin-bottom: 20px;
+            box-shadow: var(--glow);
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+
+        .card-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 22px;
+        }
+
+        .card-label::before {
+            content: '';
+            display: block;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        /* ── Objetivo row ── */
+        .objetivo-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .custom-select {
+            appearance: none;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            padding: 10px 36px 10px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            outline: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300d4ff' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .custom-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .num-input {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            width: 90px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -moz-appearance: textfield;
+        }
+
+        .num-input::-webkit-outer-spin-button,
+        .num-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .num-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .var-badge {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text-dim);
+        }
+
+        .plus-sign {
+            font-size: 18px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        /* ── Número restricciones ── */
+        .gen-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gen-label {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .gen-btn {
+            background: transparent;
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: var(--accent);
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 9px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .gen-btn:hover {
+            background: rgba(0, 212, 255, 0.08);
+            border-color: var(--accent);
+            box-shadow: 0 0 16px rgba(0, 212, 255, 0.15);
+        }
+
+        /* ── Restricciones ── */
+        #restricciones-container {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .restriccion {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            transition: border-color 0.2s;
+            animation: slideIn 0.3s ease both;
+        }
+
+        .restriccion:hover {
+            border-color: rgba(0, 212, 255, 0.25);
+        }
+
+        .restriccion-num {
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            color: var(--accent2);
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            padding: 3px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        .signo-select {
+            appearance: none;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--accent3);
+            font-family: var(--font-mono);
+            font-weight: 500;
+            font-size: 14px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+            text-align: center;
+        }
+
+        .signo-select:focus {
+            border-color: var(--accent3);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* ── Submit button ── */
+        .submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent2), var(--accent));
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 28px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(124, 58, 237, 0.4);
+        }
+
+        .submit-btn:hover::before { opacity: 1; }
+        .submit-btn:active { transform: translateY(0); }
+
+        .submit-icon {
+            font-size: 16px;
+        }
+
+        /* ── Gráfico ── */
+        .grafico-section {
+            margin-top: 32px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .grafico-section .card-label {
+            margin-bottom: 18px;
+        }
+
+        /* ── Tabla ── */
+        .tabla-section {
+            animation: fadeUp 0.5s ease both;
+            animation-delay: 0.1s;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead tr {
+            background: var(--surface2);
+        }
+
+        th {
+            font-family: var(--font-display);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent);
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 13px 18px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        tbody tr {
+            transition: background 0.15s;
+        }
+
+        tbody tr:hover {
+            background: var(--surface2);
+        }
+
+        /* ── Resultado ── */
+        .resultado-section {
+            animation: fadeUp 0.5s ease both;
+            animation-delay: 0.2s;
+        }
+
+        .resultado-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-top: 6px;
+        }
+
+        .resultado-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px 20px;
+            text-align: center;
+        }
+
+        .resultado-item.highlight {
+            border-color: rgba(0, 212, 255, 0.4);
+            background: rgba(0, 212, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.08);
+        }
+
+        .resultado-label {
+            font-family: var(--font-display);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .resultado-value {
+            font-family: var(--font-mono);
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .resultado-item.highlight .resultado-value {
+            color: var(--accent);
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 600px) {
+            .card { padding: 20px 18px; }
+            .objetivo-row, .gen-row { gap: 8px; }
+            .num-input { width: 72px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <div class="header-tag">Investigación de Operaciones</div>
+        <h1>Método Gráfico</h1>
+        <p class="header-sub">Programación Lineal · Dos Variables</p>
+    </div>
+
+    <form method="POST">
+
+        <!-- Función objetivo -->
+        <div class="card">
+            <div class="card-label">Función Objetivo</div>
+
+            <div class="objetivo-row">
+                <select class="custom-select" name="tipo">
+                    <option value="max">Maximizar</option>
+                    <option value="min">Minimizar</option>
+                </select>
+
+                <span style="font-size:12px;color:var(--text-muted);font-family:var(--font-display);font-weight:600;letter-spacing:.06em;">Z =</span>
+
+                <input class="num-input" type="number" step="any" name="z1" placeholder="0" required>
+                <span class="var-badge">X₁</span>
+                <span class="plus-sign">+</span>
+                <input class="num-input" type="number" step="any" name="z2" placeholder="0" required>
+                <span class="var-badge">X₂</span>
+            </div>
+        </div>
+
+        <!-- Restricciones -->
+        <div class="card">
+            <div class="card-label">Restricciones</div>
+
+            <div class="gen-row">
+                <span class="gen-label">Cantidad:</span>
+                <input class="num-input" type="number" id="num_restricciones" name="num_restricciones" min="1" value="3" required style="width:70px;">
+                <button type="button" class="gen-btn" onclick="generarRestricciones()">Generar</button>
+            </div>
+
+            <div id="restricciones-container"></div>
+        </div>
+
+        <button class="submit-btn" type="submit">
+            <span class="submit-icon">◈</span>
+            Calcular Solución Óptima
+        </button>
+
+    </form>
+
+
+    <!-- Gráfico (Jinja) -->
+    {% if grafico %}
+    <div class="card grafico-section" style="margin-top:32px;padding:24px;">
+        <div class="card-label">Región Factible</div>
+        {{ grafico|safe }}
+    </div>
+    {% endif %}
+
+
+    <!-- Tabla de vértices (Jinja) -->
+    {% if tabla %}
+    <div class="card tabla-section" style="margin-top:20px;padding:0;overflow:hidden;">
+        <div style="padding:22px 28px 0;">
+            <div class="card-label">Vértices de la Región Factible</div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Punto</th>
+                    <th>Coordenada</th>
+                    <th>Valor de Z</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in tabla %}
+                <tr>
+                    <td>{{ fila.punto }}</td>
+                    <td>{{ fila.coord }}</td>
+                    <td>{{ fila.valor }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+
+    <!-- Resultado óptimo (Jinja) -->
+    {% if resultado %}
+    <div class="card resultado-section" style="margin-top:20px;">
+        <div class="card-label">Solución Óptima</div>
+        <div class="resultado-grid">
+            <div class="resultado-item highlight">
+                <div class="resultado-label">Z óptimo</div>
+                <div class="resultado-value">{{ resultado.z }}</div>
+            </div>
+            <div class="resultado-item">
+                <div class="resultado-label">X₁</div>
+                <div class="resultado-value">{{ resultado.x1 }}</div>
+            </div>
+            <div class="resultado-item">
+                <div class="resultado-label">X₂</div>
+                <div class="resultado-value">{{ resultado.x2 }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div><!-- /container -->
+
+
+<script>
+function generarRestricciones() {
+    const cantidad = parseInt(document.getElementById("num_restricciones").value);
+    const container = document.getElementById("restricciones-container");
+    container.innerHTML = "";
+
+    for (let i = 0; i < cantidad; i++) {
+        const div = document.createElement("div");
+        div.className = "restriccion";
+        div.style.animationDelay = (i * 0.06) + "s";
+        div.innerHTML = `
+            <span class="restriccion-num">R${i + 1}</span>
+            <input class="num-input" type="number" step="any" name="a${i}" placeholder="0" required>
+            <span class="var-badge" style="font-size:13px;">X₁</span>
+            <span class="plus-sign">+</span>
+            <input class="num-input" type="number" step="any" name="b${i}" placeholder="0" required>
+            <span class="var-badge" style="font-size:13px;">X₂</span>
+            <select class="signo-select" name="signo${i}">
+                <option value="<=">≤</option>
+                <option value=">=">≥</option>
+            </select>
+            <input class="num-input" type="number" step="any" name="c${i}" placeholder="0" required>
+        `;
+        container.appendChild(div);
+    }
+}
+
+window.onload = generarRestricciones;
+</script>
+
+</body>
+</html>
