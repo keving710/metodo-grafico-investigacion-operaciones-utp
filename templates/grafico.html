@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Método Gráfico</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #181c27;
+            --border: #2a2f3e;
+            --accent: #4f8ef7;
+            --accent2: #a78bfa;
+            --success: #34d399;
+            --danger: #f87171;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'DM Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+            padding: 40px 24px;
+        }
+
+        .container { max-width: 860px; margin: 0 auto; }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: color .2s, border-color .2s;
+            margin-bottom: 36px;
+        }
+        .back-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+        h1 {
+            font-family: var(--mono);
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-family: var(--mono);
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 14px;
+            padding: 9px 12px;
+            outline: none;
+            transition: border-color .2s;
+            -moz-appearance: textfield;
+        }
+        select:focus, input[type="number"]:focus { border-color: var(--accent); }
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 700;
+            padding: 11px 28px;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+        .btn-primary:hover { opacity: .85; }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent2);
+            border: 1px solid var(--accent2);
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 22px;
+            cursor: pointer;
+            transition: background .2s;
+        }
+        .btn-secondary:hover { background: rgba(167,139,250,.1); }
+
+        .actions-row { display: flex; gap: 12px; margin-top: 20px; }
+
+        /* Función objetivo */
+        .obj-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .z-label {
+            font-family: var(--mono);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .term {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .term input { width: 80px; }
+
+        .var-label {
+            font-family: var(--mono);
+            font-size: 14px;
+            color: var(--accent2);
+            font-weight: 700;
+        }
+
+        .op-sign {
+            font-family: var(--mono);
+            font-size: 18px;
+            color: var(--muted);
+        }
+
+        /* Restricciones */
+        .restriccion-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .restriccion-num {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            min-width: 22px;
+        }
+
+        .signo-select {
+            width: auto !important;
+            padding: 8px 10px !important;
+            color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            font-size: 14px !important;
+        }
+
+        .rhs-input { width: 80px !important; }
+
+        /* Resultado */
+        .resultado-card {
+            background: linear-gradient(135deg, rgba(79,142,247,.1), rgba(167,139,250,.07));
+            border: 1px solid var(--accent);
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+        }
+
+        .resultado-label {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .resultado-valor {
+            font-family: var(--mono);
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .vars-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .var-chip {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-family: var(--mono);
+            font-size: 13px;
+        }
+
+        .var-chip span { color: var(--accent2); font-weight: 700; }
+
+        /* Tabla */
+        .tabla-wrap { overflow-x: auto; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: var(--mono);
+            font-size: 13px;
+        }
+
+        th {
+            background: rgba(79,142,247,.1);
+            color: var(--accent);
+            padding: 9px 14px;
+            border: 1px solid var(--border);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        td {
+            border: 1px solid var(--border);
+            padding: 9px 14px;
+            text-align: center;
+            color: var(--text);
+        }
+
+        tr.optimo td { color: var(--success); font-weight: 700; }
+
+        /* Gráfico */
+        .grafico-wrap {
+            margin-top: 4px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .grafico-wrap * { max-width: 100%; }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+        @media(max-width: 600px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .obj-row, .restriccion-row { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <a href="/" class="back-btn">← Volver al menú</a>
+
+    <h1>Método Gráfico</h1>
+    <p class="subtitle">// Optimización con 2 variables — Región factible</p>
+
+    <form method="POST">
+
+        <div class="card">
+            <div class="card-title">Configuración del problema</div>
+            <div class="grid-2">
+                <div>
+                    <label>Tipo de optimización</label>
+                    <select name="tipo">
+                        <option value="max">Maximizar</option>
+                        <option value="min">Minimizar</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Número de restricciones</label>
+                    <input type="number" id="num_restricciones" name="num_restricciones" min="1" placeholder="ej. 2">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Función Objetivo</div>
+            <div class="obj-row">
+                <span class="z-label">Z =</span>
+                <div class="term">
+                    <input type="number" step="any" name="z1" placeholder="0" required>
+                    <span class="var-label">X1</span>
+                </div>
+                <span class="op-sign">+</span>
+                <div class="term">
+                    <input type="number" step="any" name="z2" placeholder="0" required>
+                    <span class="var-label">X2</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="contenedor_restricciones"></div>
+
+        <div class="actions-row">
+            <button type="button" class="btn-secondary" onclick="crearRestricciones()">Generar restricciones</button>
+            <button type="submit" class="btn-primary">Resolver →</button>
+        </div>
+
+    </form>
+
+    {% if resultado %}
+    <hr>
+
+    <div class="resultado-card">
+        <div class="resultado-label">Valor óptimo</div>
+        <div class="resultado-valor">Z = {{ resultado.z }}</div>
+        <div class="vars-grid">
+            <div class="var-chip"><span>X1</span> = {{ resultado.x1 }}</div>
+            <div class="var-chip"><span>X2</span> = {{ resultado.x2 }}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if tabla %}
+    <div class="card">
+        <div class="card-title">Tabla de puntos candidatos</div>
+        <div class="tabla-wrap">
+            <table>
+                <tr>
+                    <th>Punto</th>
+                    <th>Coordenadas</th>
+                    <th>Valor Z</th>
+                </tr>
+                {% for fila in tabla %}
+                <tr class="{{ 'optimo' if fila.coord == '(' ~ resultado.x1 ~ ', ' ~ resultado.x2 ~ ')' else '' }}">
+                    <td>{{ fila.punto }}</td>
+                    <td>{{ fila.coord }}</td>
+                    <td>{{ fila.valor }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if grafico %}
+    <div class="card">
+        <div class="card-title">Región factible</div>
+        <div class="grafico-wrap">
+            {{ grafico|safe }}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    function crearRestricciones() {
+        const n = parseInt(document.getElementById("num_restricciones").value);
+        if (!n || n < 1) return;
+
+        const contenedor = document.getElementById("contenedor_restricciones");
+        contenedor.innerHTML = "";
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<div class="card-title">Restricciones</div>`;
+
+        for (let i = 0; i < n; i++) {
+            const row = document.createElement("div");
+            row.className = "restriccion-row";
+
+            const lbl = document.createElement("span");
+            lbl.className = "restriccion-num";
+            lbl.textContent = `R${i+1}`;
+            row.appendChild(lbl);
+
+            // X1
+            const t1 = document.createElement("div");
+            t1.className = "term";
+            t1.innerHTML = `<input type="number" step="any" name="a${i}" placeholder="0" required><span class="var-label">X1</span>`;
+            row.appendChild(t1);
+
+            const plus = document.createElement("span");
+            plus.className = "op-sign";
+            plus.textContent = "+";
+            row.appendChild(plus);
+
+            // X2
+            const t2 = document.createElement("div");
+            t2.className = "term";
+            t2.innerHTML = `<input type="number" step="any" name="b${i}" placeholder="0" required><span class="var-label">X2</span>`;
+            row.appendChild(t2);
+
+            // Signo
+            const sel = document.createElement("select");
+            sel.name = `signo${i}`;
+            sel.className = "signo-select";
+            sel.innerHTML = `
+                <option value="<=">≤</option>
+                <option value=">=">≥</option>
+            `;
+            row.appendChild(sel);
+
+            // RHS
+            const rhs = document.createElement("div");
+            rhs.className = "term";
+            rhs.innerHTML = `<input type="number" step="any" name="c${i}" class="rhs-input" placeholder="0" required>`;
+            row.appendChild(rhs);
+
+            card.appendChild(row);
+        }
+
+        contenedor.appendChild(card);
+    }
+</script>
+</body>
+</html>

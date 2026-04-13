@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calculadora de Optimización</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #181c27;
+            --border: #2a2f3e;
+            --accent: #4f8ef7;
+            --accent2: #a78bfa;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'DM Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+
+        .container {
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 4px 14px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: var(--mono);
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 48px;
+        }
+
+        .cards {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .method-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px 28px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: border-color .2s, transform .15s;
+            cursor: pointer;
+        }
+
+        .method-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .method-card:hover .arrow { color: var(--accent); }
+
+        .method-card.purple:hover { border-color: var(--accent2); }
+        .method-card.purple:hover .arrow { color: var(--accent2); }
+        .method-card.purple .method-num { color: var(--accent2); }
+
+        .method-left { text-align: left; }
+
+        .method-num {
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .method-name {
+            font-family: var(--mono);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .method-desc {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .arrow {
+            font-size: 22px;
+            color: var(--muted);
+            transition: color .2s;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="badge">Investigación de Operaciones</div>
+
+    <h1>Calculadora de<br>Optimización</h1>
+    <p class="subtitle">// Selecciona el método a utilizar</p>
+
+    <div class="cards">
+
+        <a href="/grafico" class="method-card">
+            <div class="method-left">
+                <div class="method-num">Método 01</div>
+                <div class="method-name">Método Gráfico</div>
+                <div class="method-desc">Resolución visual de problemas con 2 variables</div>
+            </div>
+            <span class="arrow">→</span>
+        </a>
+
+        <a href="/simplex" class="method-card purple">
+            <div class="method-left">
+                <div class="method-num">Método 02</div>
+                <div class="method-name">Método Simplex</div>
+                <div class="method-desc">Optimización algebraica iterativa por tablas</div>
+            </div>
+            <span class="arrow">→</span>
+        </a>
+
+    </div>
+
+    <div class="footer">// Max · Min · PL</div>
+
+</div>
+</body>
+</html>
