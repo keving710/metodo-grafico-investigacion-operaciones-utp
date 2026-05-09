@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 from grafico import resolver_grafico
 from simplex import resolver_simplex
+from simplex_2fases import resolver_dos_fases
 
 app = Flask(__name__)
 
@@ -43,6 +44,32 @@ def simplex():
         iteraciones=iteraciones,
         encabezados=encabezados,
         valores_variables=valores_variables
+    )
+
+
+@app.route("/dos_fases", methods=["GET", "POST"])
+def dos_fases():
+    resultado = None
+    iteraciones_f1 = []
+    bases_f1 = []
+    enc_f1 = []
+    iteraciones_f2 = []
+    bases_f2 = []
+    enc_f2 = []
+
+    if request.method == "POST":
+        resultado, iteraciones_f1, bases_f1, enc_f1, \
+        iteraciones_f2, bases_f2, enc_f2 = resolver_dos_fases(request.form)
+
+    return render_template(
+        "dos_fases.html",
+        resultado=resultado,
+        iteraciones_f1=iteraciones_f1,
+        bases_f1=bases_f1,
+        enc_f1=enc_f1,
+        iteraciones_f2=iteraciones_f2,
+        bases_f2=bases_f2,
+        enc_f2=enc_f2,
     )
 
 

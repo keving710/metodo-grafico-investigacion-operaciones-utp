@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simplex — Dos Fases</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #181c27;
+            --border: #2a2f3e;
+            --accent: #4f8ef7;
+            --accent2: #a78bfa;
+            --success: #34d399;
+            --danger: #f87171;
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'DM Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+            padding: 40px 24px;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            padding: 6px 14px;
+            border-radius: 6px;
+            background: var(--surface);
+            cursor: pointer;
+            transition: color .2s, border-color .2s;
+            margin-bottom: 36px;
+        }
+        .back-btn:hover { color: var(--success); border-color: var(--success); }
+
+        h1 {
+            font-family: var(--mono);
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--muted);
+            font-family: var(--mono);
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--success);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 6px;
+            font-family: var(--mono);
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: var(--mono);
+            font-size: 14px;
+            padding: 9px 12px;
+            outline: none;
+            transition: border-color .2s;
+            -moz-appearance: textfield;
+        }
+        select:focus, input[type="number"]:focus { border-color: var(--success); }
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        .btn-primary {
+            background: var(--success);
+            color: #0f1117;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 700;
+            padding: 11px 28px;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+        .btn-primary:hover { opacity: .85; }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--success);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 22px;
+            cursor: pointer;
+            transition: background .2s;
+        }
+        .btn-secondary:hover { background: rgba(52,211,153,.1); }
+
+        .actions-row { display: flex; gap: 12px; margin-top: 20px; }
+
+        .obj-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .term { display: flex; align-items: center; gap: 8px; }
+        .term input { width: 80px; }
+
+        .var-label {
+            font-family: var(--mono);
+            font-size: 14px;
+            color: var(--accent2);
+            font-weight: 700;
+        }
+
+        .op-sign {
+            font-family: var(--mono);
+            font-size: 18px;
+            color: var(--muted);
+        }
+
+        .restriccion-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 12px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .restriccion-num {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            min-width: 22px;
+        }
+
+        .tipo-rest-select {
+            width: auto !important;
+            padding: 8px 10px !important;
+            color: var(--success) !important;
+            border-color: var(--success) !important;
+            font-size: 15px !important;
+        }
+
+        .sol-input { width: 80px !important; }
+
+        /* ── Resultado ── */
+        .resultado-card {
+            background: linear-gradient(135deg, rgba(52,211,153,.1), rgba(79,142,247,.07));
+            border: 1px solid var(--success);
+            border-radius: 12px;
+            padding: 24px 28px;
+            margin-bottom: 20px;
+        }
+
+        .resultado-label {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .resultado-valor {
+            font-family: var(--mono);
+            font-size: 34px;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 16px;
+        }
+
+        .vars-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .var-chip {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-family: var(--mono);
+            font-size: 13px;
+        }
+        .var-chip span { color: var(--success); font-weight: 700; }
+
+        /* ── Fase badge ── */
+        .fase-badge {
+            display: inline-block;
+            font-family: var(--mono);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            padding: 3px 12px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+        }
+        .fase-badge.f1 { color: var(--accent); border: 1px solid var(--accent); }
+        .fase-badge.f2 { color: var(--success); border: 1px solid var(--success); }
+
+        /* ── Tablas ── */
+        .iter-header {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            margin: 18px 0 8px;
+        }
+        .iter-header b       { color: var(--accent); }
+        .iter-header b.green { color: var(--success); }
+
+        .tabla-wrap { overflow-x: auto; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+
+        /* Fase I — encabezados azules */
+        .card.f1 th {
+            background: rgba(79,142,247,.1);
+            color: var(--accent);
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        /* Fase II — encabezados verdes */
+        .card.f2 th {
+            background: rgba(52,211,153,.08);
+            color: var(--success);
+            padding: 7px 12px;
+            border: 1px solid var(--border);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        td {
+            border: 1px solid var(--border);
+            padding: 7px 12px;
+            text-align: center;
+        }
+
+        tr.fila-z td { background: rgba(167,139,250,.07); color: var(--accent2); font-weight: 600; }
+        tr.fila-z th { background: rgba(167,139,250,.1);  color: var(--accent2); }
+
+        td.base-cell { color: var(--success); font-weight: 700; }
+        td.neg { color: var(--danger); }
+
+        .fase-ok {
+            margin-top: 14px;
+            padding: 10px 14px;
+            background: rgba(52,211,153,.07);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--success);
+        }
+
+        .error-box {
+            background: rgba(248,113,113,.08);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-family: var(--mono);
+            font-size: 13px;
+        }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+        @media(max-width: 600px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .obj-row, .restriccion-row { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <a href="/" class="back-btn">← Volver al menú</a>
+
+    <h1>Simplex — Dos Fases</h1>
+    <p class="subtitle">// Fase I elimina artificiales · Fase II optimiza la función objetivo</p>
+
+    <!-- ─── FORMULARIO ─── -->
+    <form method="POST">
+
+        <div class="card">
+            <div class="card-title">Configuración del problema</div>
+            <div class="grid-2">
+                <div>
+                    <label>Tipo de optimización</label>
+                    <select name="tipo">
+                        <option value="min">Minimizar</option>
+                        <option value="max">Maximizar</option>
+                    </select>
+                </div>
+                <div></div>
+                <div>
+                    <label>Número de variables</label>
+                    <input type="number" id="num_variables" name="num_variables" min="1" placeholder="ej. 2">
+                </div>
+                <div>
+                    <label>Número de restricciones</label>
+                    <input type="number" id="num_restricciones" name="num_restricciones" min="1" placeholder="ej. 2">
+                </div>
+            </div>
+            <div class="actions-row">
+                <button type="button" class="btn-secondary" onclick="generarFormulario()">Generar campos</button>
+            </div>
+        </div>
+
+        <div id="formulario_dosfases"></div>
+
+        <div id="btn-resolver" style="display:none; margin-top: 4px;">
+            <button type="submit" class="btn-primary">Resolver →</button>
+        </div>
+
+    </form>
+
+    <!-- ─── RESULTADOS ─── -->
+    {% if resultado %}
+    <hr>
+
+        {% if resultado.error is defined and resultado.error %}
+            <div class="error-box">⚠️ {{ resultado.error }}</div>
+
+        {% else %}
+
+            <!-- Resultado final -->
+            <div class="resultado-card">
+                <div class="resultado-label">Valor óptimo</div>
+                <div class="resultado-valor">Z = {{ resultado.z }}</div>
+                <div class="vars-grid">
+                    {% for nombre, val in resultado.valores.items() %}
+                    <div class="var-chip"><span>{{ nombre }}</span> = {{ val }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- FASE I -->
+            <div class="card f1">
+                <div class="fase-badge f1">Fase I — Min Z₁ = Σ Artificiales</div>
+
+                {% for idx in range(iteraciones_f1 | length) %}
+                <div class="iter-header">
+                    {% if idx == 0 %}Tabla inicial (SBFI)
+                    {% else %}<b>Iteración {{ idx }}</b>{% endif %}
+                    &nbsp;·&nbsp; Base: {{ bases_f1[idx] | join(", ") }}
+                </div>
+                <div class="tabla-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>V.B.</th>
+                                {% for h in enc_f1 %}<th>{{ h }}</th>{% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in range(iteraciones_f1[idx] | length) %}
+                                {% if i == iteraciones_f1[idx] | length - 1 %}
+                                <tr class="fila-z"><th>Z₁</th>
+                                {% else %}
+                                <tr><td class="base-cell">{{ bases_f1[idx][i] }}</td>
+                                {% endif %}
+                                {% for v in iteraciones_f1[idx][i] %}
+                                    <td class="{{ 'neg' if v < 0 else '' }}">{{ v }}</td>
+                                {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+
+                <div class="fase-ok">✓ Fase I completada — Z₁ = 0 · Variables artificiales fuera de la base</div>
+            </div>
+
+            <!-- FASE II -->
+            <div class="card f2">
+                <div class="fase-badge f2">Fase II — {{ "Max" if resultado.tipo == "max" else "Min" }} Z = función objetivo original</div>
+
+                {% for idx in range(iteraciones_f2 | length) %}
+                <div class="iter-header">
+                    {% if idx == 0 %}Tabla inicial Fase II
+                    {% else %}<b class="green">Iteración {{ idx }}</b>{% endif %}
+                    &nbsp;·&nbsp; Base: {{ bases_f2[idx] | join(", ") }}
+                </div>
+                <div class="tabla-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>V.B.</th>
+                                {% for h in enc_f2 %}<th>{{ h }}</th>{% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in range(iteraciones_f2[idx] | length) %}
+                                {% if i == iteraciones_f2[idx] | length - 1 %}
+                                <tr class="fila-z"><th>Z</th>
+                                {% else %}
+                                <tr><td class="base-cell">{{ bases_f2[idx][i] }}</td>
+                                {% endif %}
+                                {% for v in iteraciones_f2[idx][i] %}
+                                    <td class="{{ 'neg' if v < 0 else '' }}">{{ v }}</td>
+                                {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+
+        {% endif %}
+    {% endif %}
+
+</div>
+
+<script>
+function generarFormulario() {
+    const n = parseInt(document.getElementById("num_variables").value);
+    const m = parseInt(document.getElementById("num_restricciones").value);
+    if (!n || !m) return;
+
+    const c = document.getElementById("formulario_dosfases");
+    c.innerHTML = "";
+
+    // Función objetivo
+    const cardObj = document.createElement("div");
+    cardObj.className = "card";
+    cardObj.innerHTML = `<div class="card-title">Función Objetivo</div>`;
+    const objRow = document.createElement("div");
+    objRow.className = "obj-row";
+    for (let i = 0; i < n; i++) {
+        const term = document.createElement("div");
+        term.className = "term";
+        term.innerHTML = `
+            <input type="number" step="any" name="z${i}" placeholder="0" required>
+            <span class="var-label">X${i+1}</span>
+        `;
+        objRow.appendChild(term);
+        if (i < n - 1) {
+            const sign = document.createElement("span");
+            sign.className = "op-sign";
+            sign.textContent = "+";
+            objRow.appendChild(sign);
+        }
+    }
+    cardObj.appendChild(objRow);
+    c.appendChild(cardObj);
+
+    // Restricciones
+    const cardRest = document.createElement("div");
+    cardRest.className = "card";
+    cardRest.innerHTML = `<div class="card-title">Restricciones</div>`;
+    for (let i = 0; i < m; i++) {
+        const row = document.createElement("div");
+        row.className = "restriccion-row";
+        const lbl = document.createElement("span");
+        lbl.className = "restriccion-num";
+        lbl.textContent = `R${i+1}`;
+        row.appendChild(lbl);
+        for (let j = 0; j < n; j++) {
+            const term = document.createElement("div");
+            term.className = "term";
+            term.innerHTML = `
+                <input type="number" step="any" name="r${i}_${j}" placeholder="0" required>
+                <span class="var-label">X${j+1}</span>
+            `;
+            row.appendChild(term);
+            if (j < n - 1) {
+                const sign = document.createElement("span");
+                sign.className = "op-sign";
+                sign.textContent = "+";
+                row.appendChild(sign);
+            }
+        }
+        const sel = document.createElement("select");
+        sel.name = `tipo_rest${i}`;
+        sel.className = "tipo-rest-select";
+        sel.innerHTML = `
+            <option value="<=">≤</option>
+            <option value=">=">≥</option>
+            <option value="=">=</option>
+        `;
+        row.appendChild(sel);
+        const solTerm = document.createElement("div");
+        solTerm.className = "term";
+        solTerm.innerHTML = `<input type="number" step="any" name="sol${i}" class="sol-input" placeholder="0" required>`;
+        row.appendChild(solTerm);
+        cardRest.appendChild(row);
+    }
+    c.appendChild(cardRest);
+    document.getElementById("btn-resolver").style.display = "block";
+}
+</script>
+</body>
+</html>
