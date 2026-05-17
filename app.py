@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 from grafico import resolver_grafico
 from simplex import resolver_simplex
 from simplex_2fases import resolver_dos_fases
+from dual import resolver_dual
 
 app = Flask(__name__)
 
@@ -72,6 +73,25 @@ def dos_fases():
         enc_f2=enc_f2,
     )
 
+
+
+@app.route("/dual", methods=["GET", "POST"])
+def dual():
+    resultado   = None
+    iteraciones = []
+    bases_iter  = []
+    encabezados = []
+
+    if request.method == "POST":
+        resultado, iteraciones, bases_iter, encabezados = resolver_dual(request.form)
+
+    return render_template(
+        "dual.html",
+        resultado=resultado,
+        iteraciones=iteraciones,
+        bases_iter=bases_iter,
+        encabezados=encabezados,
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

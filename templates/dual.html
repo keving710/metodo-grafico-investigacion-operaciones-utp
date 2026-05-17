@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Método Dual</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #0f1117;
+            --surface:  #181c27;
+            --border:   #2a2f3e;
+            --accent:   #4f8ef7;
+            --accent2:  #a78bfa;
+            --gold:     #f59e0b;
+            --gold-dim: rgba(245,158,11,.08);
+            --success:  #34d399;
+            --text:     #e2e8f0;
+            --muted:    #64748b;
+            --mono:     'JetBrains Mono', monospace;
+            --sans:     'DM Sans', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+            padding: 40px 24px;
+        }
+
+        .container { max-width: 980px; margin: 0 auto; }
+
+        /* ── Nav ── */
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            font-family: var(--mono); font-size: 12px; color: var(--muted);
+            text-decoration: none; border: 1px solid var(--border);
+            padding: 6px 14px; border-radius: 6px; background: var(--surface);
+            cursor: pointer; transition: color .2s, border-color .2s;
+            margin-bottom: 36px;
+        }
+        .back-btn:hover { color: var(--gold); border-color: var(--gold); }
+
+        h1 { font-family: var(--mono); font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+        .subtitle { font-size: 12px; color: var(--muted); font-family: var(--mono); margin-bottom: 32px; }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .card-title {
+            font-family: var(--mono); font-size: 10px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
+            margin-bottom: 18px; color: var(--gold);
+        }
+
+        /* ── Form layout ── */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; font-family: var(--mono); }
+
+        select, input[type="number"] {
+            width: 100%; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: var(--mono);
+            font-size: 14px; padding: 9px 12px; outline: none; transition: border-color .2s;
+            -moz-appearance: textfield;
+        }
+        select:focus, input[type="number"]:focus { border-color: var(--gold); }
+        input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        .btn-primary {
+            background: var(--gold); color: #0f1117; border: none; border-radius: 8px;
+            font-family: var(--mono); font-size: 13px; font-weight: 700;
+            padding: 11px 28px; cursor: pointer; transition: opacity .2s;
+        }
+        .btn-primary:hover { opacity: .85; }
+
+        .btn-secondary {
+            background: transparent; color: var(--gold); border: 1px solid var(--gold);
+            border-radius: 8px; font-family: var(--mono); font-size: 13px; font-weight: 600;
+            padding: 10px 22px; cursor: pointer; transition: background .2s;
+        }
+        .btn-secondary:hover { background: rgba(245,158,11,.1); }
+
+        .actions-row { display: flex; gap: 12px; margin-top: 20px; }
+
+        .obj-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .term { display: flex; align-items: center; gap: 8px; }
+        .term input { width: 80px; }
+        .var-label { font-family: var(--mono); font-size: 14px; color: var(--accent2); font-weight: 700; }
+        .op-sign   { font-family: var(--mono); font-size: 18px; color: var(--muted); }
+
+        .restriccion-row {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+            padding: 12px 14px; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px;
+        }
+        .restriccion-num { font-family: var(--mono); font-size: 11px; color: var(--muted); min-width: 22px; }
+        .tipo-rest-select {
+            width: auto !important; padding: 8px 10px !important;
+            color: var(--gold) !important; border-color: var(--gold) !important;
+            font-size: 15px !important;
+        }
+        .sol-input { width: 80px !important; }
+
+        /* ── Primal / Dual lado a lado ── */
+        .prob-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .prob-box {
+            background: var(--bg); border-radius: 10px;
+            padding: 20px 24px; border: 1px solid var(--border);
+        }
+        .prob-box.primal { border-color: var(--accent); }
+        .prob-box.dual   { border-color: var(--gold); }
+
+        .prob-label {
+            font-family: var(--mono); font-size: 10px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px;
+        }
+        .prob-label.primal { color: var(--accent); }
+        .prob-label.dual   { color: var(--gold); }
+
+        .prob-line {
+            font-family: var(--mono); font-size: 13px; color: var(--text);
+            margin-bottom: 7px; line-height: 1.8;
+        }
+        .prob-line .hl  { color: var(--accent2); font-weight: 700; }
+        .prob-line .dim { color: var(--muted); }
+
+        /* Signos Yi */
+        .yi-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .yi-chip {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 7px 14px;
+            font-family: var(--mono); font-size: 12px;
+        }
+        .yi-chip .yi-name { color: var(--gold); font-weight: 700; }
+        .yi-chip .yi-sign { color: var(--text); margin-left: 4px; }
+        .yi-chip .yi-sign.nr { color: var(--accent2); }
+
+        /* Tabla de reglas de conversión */
+        .rules-card {
+            background: var(--bg);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+        }
+        .rules-title {
+            font-family: var(--mono); font-size: 10px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase;
+            color: var(--gold); margin-bottom: 12px;
+        }
+        .rules-grid {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            gap: 0;
+            font-family: var(--mono);
+            font-size: 11.5px;
+        }
+        .rg-head {
+            padding: 6px 14px; background: var(--gold-dim);
+            color: var(--gold); font-weight: 700; border: 1px solid var(--border);
+            text-align: center;
+        }
+        .rg-cell {
+            padding: 7px 14px; border: 1px solid var(--border);
+            text-align: center; color: var(--text);
+        }
+        .rg-cell.hi { color: var(--success); font-weight: 600; }
+        .rg-cell.nr { color: var(--accent2); font-weight: 600; }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+        @media(max-width: 640px) {
+            .grid-2, .prob-grid { grid-template-columns: 1fr; }
+            .obj-row, .restriccion-row { flex-direction: column; align-items: flex-start; }
+            .rules-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <a href="/" class="back-btn">← Volver al menú</a>
+
+    <h1>Método Dual</h1>
+    <p class="subtitle">// Primal → Dual · Transposición de A · Aplicación de reglas</p>
+
+    <!-- ─── TABLA DE REGLAS ─── -->
+    <div class="rules-card">
+        <div class="rules-title">📐 Reglas de conversión Primal → Dual</div>
+        <div class="rules-grid">
+            <div class="rg-head">Primal (restricción)</div>
+            <div class="rg-head">Signo Y_i</div>
+            <div class="rg-head">Tipo restricción dual</div>
+
+            <div class="rg-cell">MAX · restricción ≤</div>
+            <div class="rg-cell hi">Y_i ≥ 0</div>
+            <div class="rg-cell">≥</div>
+
+            <div class="rg-cell">MAX · restricción ≥</div>
+            <div class="rg-cell hi">Y_i ≤ 0</div>
+            <div class="rg-cell">≥</div>
+
+            <div class="rg-cell">MAX · restricción =</div>
+            <div class="rg-cell nr">No restringida</div>
+            <div class="rg-cell">≥</div>
+
+            <div class="rg-cell">MIN · restricción ≥</div>
+            <div class="rg-cell hi">Y_i ≥ 0</div>
+            <div class="rg-cell">≤</div>
+
+            <div class="rg-cell">MIN · restricción ≤</div>
+            <div class="rg-cell hi">Y_i ≤ 0</div>
+            <div class="rg-cell">≤</div>
+
+            <div class="rg-cell">MIN · restricción =</div>
+            <div class="rg-cell nr">No restringida</div>
+            <div class="rg-cell">≤</div>
+        </div>
+    </div>
+
+    <!-- ─── FORMULARIO ─── -->
+    <form method="POST">
+        <div class="card">
+            <div class="card-title">Ingresar problema Primal</div>
+            <div class="grid-2">
+                <div>
+                    <label>Tipo de optimización</label>
+                    <select name="tipo">
+                        <option value="max">Maximizar</option>
+                        <option value="min">Minimizar</option>
+                    </select>
+                </div>
+                <div></div>
+                <div>
+                    <label>Número de variables (n)</label>
+                    <input type="number" id="num_variables" name="num_variables" min="1" placeholder="ej. 3">
+                </div>
+                <div>
+                    <label>Número de restricciones (m)</label>
+                    <input type="number" id="num_restricciones" name="num_restricciones" min="1" placeholder="ej. 4">
+                </div>
+            </div>
+            <div class="actions-row">
+                <button type="button" class="btn-secondary" onclick="generarFormulario()">Generar campos</button>
+            </div>
+        </div>
+
+        <div id="formulario_dual"></div>
+
+        <div id="btn-resolver" style="display:none; margin-top:4px;">
+            <button type="submit" class="btn-primary">Construir Dual →</button>
+        </div>
+    </form>
+
+    <!-- ─── RESULTADOS ─── -->
+    {% if resultado %}
+    <hr>
+
+    <!-- Primal vs Dual construido -->
+    <div class="prob-grid">
+
+        <!-- PRIMAL -->
+        <div class="prob-box primal">
+            <div class="prob-label primal">▸ Problema Primal</div>
+
+            <div class="prob-line">
+                <span class="hl">{{ "Max" if resultado.primal.tipo == "max" else "Min" }} Z</span> =
+                {% for j in range(resultado.primal.n_vars) %}
+                    {{ resultado.primal.c[j] }}X{{ j+1 }}{% if not loop.last %} + {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="prob-line dim" style="margin:.5rem 0 .3rem;">s.a:</div>
+
+            {% for i in range(resultado.primal.n_rest) %}
+            <div class="prob-line">
+                {% for j in range(resultado.primal.n_vars) %}
+                    {{ resultado.primal.A[i][j] }}X{{ j+1 }}{% if not loop.last %} + {% endif %}
+                {% endfor %}
+                &nbsp;{{ resultado.primal.tipos[i] }}&nbsp;{{ resultado.primal.b[i] }}
+            </div>
+            {% endfor %}
+
+            <div class="prob-line dim" style="margin-top:.6rem;">X₁, X₂, ... ≥ 0</div>
+        </div>
+
+        <!-- DUAL CONSTRUIDO -->
+        <div class="prob-box dual">
+            <div class="prob-label dual">▸ Problema Dual (construido)</div>
+
+            <div class="prob-line">
+                <span class="hl">{{ "Max" if resultado.dual.tipo == "max" else "Min" }} W</span> =
+                {% for j in range(resultado.dual.n_vars) %}
+                    {{ resultado.dual.c[j] }}Y{{ j+1 }}{% if not loop.last %} + {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="prob-line dim" style="margin:.5rem 0 .3rem;">s.a:</div>
+
+            {% for i in range(resultado.dual.n_rest) %}
+            <div class="prob-line">
+                {% for j in range(resultado.dual.n_vars) %}
+                    {{ resultado.dual.A[i][j] }}Y{{ j+1 }}{% if not loop.last %} + {% endif %}
+                {% endfor %}
+                &nbsp;{{ resultado.dual.tipos[i] }}&nbsp;{{ resultado.dual.b[i] }}
+            </div>
+            {% endfor %}
+
+            <!-- Signos de variables duales -->
+            <div class="prob-line dim" style="margin-top:.6rem;">Signo de variables duales:</div>
+            <div class="yi-grid">
+                {% for j in range(resultado.dual.n_vars) %}
+                <div class="yi-chip">
+                    <span class="yi-name">Y{{ j+1 }}</span>
+                    <span class="yi-sign {{ 'nr' if resultado.signos_yi[j] == 'No restringida' else '' }}">
+                        {{ resultado.signos_yi[j] }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+function generarFormulario() {
+    const n = parseInt(document.getElementById("num_variables").value);
+    const m = parseInt(document.getElementById("num_restricciones").value);
+    if (!n || !m) return;
+
+    const c = document.getElementById("formulario_dual");
+    c.innerHTML = "";
+
+    // ── Función objetivo ──
+    const cardObj = document.createElement("div");
+    cardObj.className = "card";
+    cardObj.innerHTML = `<div class="card-title">Función Objetivo Primal — Z (${n} variable${n>1?'s':''})</div>`;
+    const objRow = document.createElement("div");
+    objRow.className = "obj-row";
+    for (let i = 0; i < n; i++) {
+        const term = document.createElement("div");
+        term.className = "term";
+        term.innerHTML = `<input type="number" step="any" name="z${i}" placeholder="c${i+1}" required>
+                          <span class="var-label">X${i+1}</span>`;
+        objRow.appendChild(term);
+        if (i < n - 1) {
+            const s = document.createElement("span");
+            s.className = "op-sign"; s.textContent = "+";
+            objRow.appendChild(s);
+        }
+    }
+    cardObj.appendChild(objRow);
+    c.appendChild(cardObj);
+
+    // ── Restricciones ──
+    const cardRest = document.createElement("div");
+    cardRest.className = "card";
+    cardRest.innerHTML = `<div class="card-title">Restricciones Primal (${m} restricción${m>1?'es':''} → ${m} variable${m>1?'s':''} dual Y)</div>`;
+
+    for (let i = 0; i < m; i++) {
+        const row = document.createElement("div");
+        row.className = "restriccion-row";
+
+        const lbl = document.createElement("span");
+        lbl.className = "restriccion-num"; lbl.textContent = `R${i+1}`;
+        row.appendChild(lbl);
+
+        for (let j = 0; j < n; j++) {
+            const term = document.createElement("div");
+            term.className = "term";
+            term.innerHTML = `<input type="number" step="any" name="r${i}_${j}" placeholder="a${i+1}${j+1}" required>
+                              <span class="var-label">X${j+1}</span>`;
+            row.appendChild(term);
+            if (j < n - 1) {
+                const s = document.createElement("span");
+                s.className = "op-sign"; s.textContent = "+";
+                row.appendChild(s);
+            }
+        }
+
+        const sel = document.createElement("select");
+        sel.name = `tipo_rest${i}`;
+        sel.className = "tipo-rest-select";
+        sel.innerHTML = `<option value="<=">≤</option>
+                         <option value=">=">≥</option>
+                         <option value="=">=</option>`;
+        row.appendChild(sel);
+
+        const solT = document.createElement("div");
+        solT.className = "term";
+        solT.innerHTML = `<input type="number" step="any" name="sol${i}" class="sol-input" placeholder="b${i+1}" required>`;
+        row.appendChild(solT);
+
+        cardRest.appendChild(row);
+    }
+    c.appendChild(cardRest);
+    document.getElementById("btn-resolver").style.display = "block";
+}
+</script>
+</body>
+</html>
